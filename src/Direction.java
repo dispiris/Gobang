@@ -7,6 +7,15 @@
 //  |
 //  v
 // (y)
-public enum Direction {
+
+
+enum Direction {
+	/* 
+	 *  NW     N     NE 
+	 *         |
+	 *   W --- o --- E
+	 *         |
+	 *  SW     S     SE
+	 */
 	N, S, W, E, NE, NW, SE, SW
 }

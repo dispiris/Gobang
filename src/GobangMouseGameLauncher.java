@@ -1,4 +1,12 @@
-
+/*
+ * Author: Xinkai Zhang
+ * Version: 1.0
+ * Features:
+ * 		players can place their pieces by mouse clicks
+ * 		uses Thread.sleep to wait for instructions so not efficient and might
+ * 			cause little delay
+ * 		no multi-thread code
+ */
 public class GobangMouseGameLauncher {
 	
 	public static void main(String[] args) throws InterruptedException {
