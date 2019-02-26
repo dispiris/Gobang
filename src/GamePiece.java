@@ -15,7 +15,7 @@ public class GamePiece {
 	public static final PieceColor BLACK = PieceColor.BLACK;
 	
 	public static final int MARGIN = 100;	// 100 pixels for margin
-	public static final int WIDTH = 60; 	// 100 pixels wide between lines
+	public static final int WIDTH = 60; 	// 60 pixels wide between lines
 	public static final int RADIUS = 20;	// 20 pixels for piece radius
 	
 	public PieceColor color;	// the color of this piece
@@ -77,6 +77,16 @@ public class GamePiece {
 		int x = MARGIN + this.x * WIDTH;
 		int y = MARGIN + this.y * WIDTH;
 		g.fillOval(x - RADIUS, y - RADIUS, RADIUS * 2, RADIUS * 2);
+	}
+	
+	public void removeImage(Graphics g) {
+		int x = MARGIN + this.x * WIDTH - WIDTH / 2;
+		int y = MARGIN + this.y * WIDTH - WIDTH / 2;
+		g.setColor(GameBoard.BACKGROUND_COLOR);
+		g.fillRect(x, y, WIDTH, WIDTH);
+		g.setColor(Color.BLACK);
+		g.drawLine(x + WIDTH / 2, y, x + WIDTH / 2, y + WIDTH);
+		g.drawLine(x, y + WIDTH / 2, x + WIDTH, y + WIDTH / 2);
 	}
 	
 	// returns true if the board has three pieces of the same color in a row in the given direction

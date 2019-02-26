@@ -1,6 +1,8 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.util.EmptyStackException;
+import java.util.Stack;
 
 public class GameBoard {
 	
@@ -12,6 +14,7 @@ public class GameBoard {
 	public static final int WIDTH = 60; // 100 pixels wide between lines
 	public static final int RADIUS = 20; // 20 pixels for piece radius
 	public static final int PANEL_SIZE = 2 * MARGIN + (SIZE - 1) * WIDTH;
+	public static final Color BACKGROUND_COLOR = Color.PINK;
 
 	// fields:
 	private GamePiece[][] board;
@@ -19,6 +22,7 @@ public class GameBoard {
 	private PieceColor winner;
 	private DrawingPanel panel;
 	private Graphics g;
+	private Stack<GamePiece> pieceTrack;	// tracking game pieces
 	
 	// static states:
 	private static int mouseSpotX;
@@ -29,6 +33,7 @@ public class GameBoard {
 	// constructor:
 	public GameBoard() {
 		board = new GamePiece[15][15]; // [x][y] 0 - 14
+		pieceTrack = new Stack<>();
 		gameover = false;
 		mouseClicked = false;
 		panel = new DrawingPanel(PANEL_SIZE, PANEL_SIZE);
@@ -44,14 +49,11 @@ public class GameBoard {
 		// keyboard function (add new keyboard reactions here)
 		panel.onKeyDown(ch -> {
 			if (ch == 'r') {
-				restart();
-//				close();
-//				System.exit(0);
-//				try {
-//					GobangMouseGameLauncher.restart();
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
+				try {
+					removeLastPiece();
+				} catch (EmptyStackException ex) {
+					System.out.println("cannot undo: no pieces have been placed");
+				}
 			}
 		});
 	}
@@ -72,7 +74,14 @@ public class GameBoard {
 	public void setPiece(int x, int y, PieceColor color) {
 		System.out.println("piece set at: (" + mouseSpotX + ", " + mouseSpotY + ")");
 		board[x][y] = new GamePiece(color, x, y);
+		pieceTrack.push(board[x][y]);
 		board[x][y].getImage(g);
+	}
+	
+	public void removeLastPiece() {
+		GamePiece lastPiece = pieceTrack.pop();
+		lastPiece.removeImage(g);
+		board[lastPiece.x][lastPiece.y] = null;
 	}
 	
 	public void restart() {
@@ -135,7 +144,7 @@ public class GameBoard {
 	}
 
 	private void getImage() {
-		panel.setBackground(Color.PINK);
+		panel.setBackground(BACKGROUND_COLOR);
 		g.setColor(Color.BLACK);
 		for (int i = 0; i < SIZE; i++) {
 			g.drawLine(MARGIN, MARGIN + WIDTH * i, MARGIN + WIDTH * 14, MARGIN + WIDTH * i);
