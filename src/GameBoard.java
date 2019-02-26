@@ -23,19 +23,25 @@ public class GameBoard {
 	private DrawingPanel panel;
 	private Graphics g;
 	private Stack<GamePiece> pieceTrack;	// tracking game pieces
-	
-	// static states:
-	private static int mouseSpotX;
-	private static int mouseSpotY;
-	public static boolean mouseClicked;
-	public static boolean gameRestarted;
-
+	public boolean lastPieceRemoved;
+	public PieceColor current;		// may or may not be used
+	private int mouseSpotX;
+	private int mouseSpotY;
+	public boolean mouseClicked;
+	public boolean gameRestarted;
+	 
 	// constructor:
 	public GameBoard() {
+		this(BLACK);
+	}
+	
+	public GameBoard(PieceColor start) {
+		this.current = start;
 		board = new GamePiece[15][15]; // [x][y] 0 - 14
 		pieceTrack = new Stack<>();
 		gameover = false;
 		mouseClicked = false;
+		lastPieceRemoved = false;
 		panel = new DrawingPanel(PANEL_SIZE, PANEL_SIZE);
 		g = panel.getGraphics();
 		getImage();
@@ -59,11 +65,11 @@ public class GameBoard {
 	}
 
 	// getters:
-	public static int getMouseSpotX() {
+	public int getMouseSpotX() {
 		return mouseSpotX;
 	}
 
-	public static int getMouseSpotY() {
+	public int getMouseSpotY() {
 		return mouseSpotY;
 	}
 
@@ -72,6 +78,7 @@ public class GameBoard {
 	}
 
 	public void setPiece(int x, int y, PieceColor color) {
+		if (current == BLACK)	current = WHITE;	else	current = BLACK;
 		System.out.println("piece set at: (" + mouseSpotX + ", " + mouseSpotY + ")");
 		board[x][y] = new GamePiece(color, x, y);
 		pieceTrack.push(board[x][y]);
@@ -82,13 +89,18 @@ public class GameBoard {
 		GamePiece lastPiece = pieceTrack.pop();
 		lastPiece.removeImage(g);
 		board[lastPiece.x][lastPiece.y] = null;
+		if (lastPiece.color == BLACK)	current = BLACK;	else	current = WHITE;
+		lastPieceRemoved = true;
+		System.out.println("last piece withdrawn");
 	}
 	
+	// potential
 	public void restart() {
 		System.out.println("Game restarted");
 		board = new GamePiece[15][15];
 		gameover = false;
 		winner = null;
+		current = BLACK;
 		mouseClicked = false;
 		mouseSpotX = 0;
 		mouseSpotY = 0;
