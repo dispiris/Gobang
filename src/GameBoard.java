@@ -1,12 +1,18 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
 public class GameBoard {
 	
-	// class constants:
+	// utility constants:
 	public static final PieceColor BLACK = PieceColor.BLACK;
 	public static final PieceColor WHITE = PieceColor.WHITE;
 	public static final int SIZE = 15; // 15 * 15 board
@@ -14,37 +20,50 @@ public class GameBoard {
 	public static final int WIDTH = 60; // 100 pixels wide between lines
 	public static final int RADIUS = 20; // 20 pixels for piece radius
 	public static final int PANEL_SIZE = 2 * MARGIN + (SIZE - 1) * WIDTH;
-	public static final Color BACKGROUND_COLOR = Color.PINK;
+	public static final Color BACKGROUND_COLOR = new Color(222, 184, 135);	// color of goldwood
+	public static final Color DISPLAY_COLOR = new Color(96,40,30);
 
 	// fields:
 	private GamePiece[][] board;
-	private boolean gameover;
-	private PieceColor winner;
 	private DrawingPanel panel;
 	private Graphics g;
-	private Stack<GamePiece> pieceTrack;	// tracking game pieces
-	public boolean lastPieceRemoved;
-	public PieceColor current;		// may or may not be used
+	private Stack<GamePiece> undoTrack;	// tracking game pieces
+	private PieceColor current;		// may or may not be used
+	private boolean gameover;
+	private PieceColor winner;
 	private int mouseSpotX;
 	private int mouseSpotY;
+	private int stepTrack;
+	
+	private PrintStream tracker;
+	private boolean recordingOn;
 	public boolean mouseClicked;
-	public boolean gameRestarted;
-	 
-	// constructor:
+	
 	public GameBoard() {
-		this(BLACK);
+		this(BLACK, true);
 	}
 	
-	public GameBoard(PieceColor start) {
-		this.current = start;
+	public GameBoard(boolean recordingOn) {
+		this(BLACK, recordingOn);
+	}
+	
+	public GameBoard(PieceColor start, boolean recordingOn) {
 		board = new GamePiece[15][15]; // [x][y] 0 - 14
-		pieceTrack = new Stack<>();
-		gameover = false;
-		mouseClicked = false;
-		lastPieceRemoved = false;
-		panel = new DrawingPanel(PANEL_SIZE, PANEL_SIZE);
+		panel = new DrawingPanel(PANEL_SIZE, PANEL_SIZE + 70);
 		g = panel.getGraphics();
+		undoTrack = new Stack<>();
+		this.current = start;
+		gameover = false;
+		winner = null;
+		mouseClicked = false;
+		stepTrack = 1;
+		this.recordingOn = recordingOn;
 		getImage();
+		if (recordingOn) {
+			try {
+				getTracker();
+			} catch (FileNotFoundException e) {};
+		}
 		
 		// mouse click function
 		panel.onClick((x, y) -> {
@@ -63,50 +82,46 @@ public class GameBoard {
 			}
 		});
 	}
-
-	// getters:
-	public int getMouseSpotX() {
-		return mouseSpotX;
+	
+	private void getTracker() throws FileNotFoundException {
+		File dir = new File("replays");
+		dir.mkdirs();
+		Date date = new Date() ;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
+		File file = new File(dir, dateFormat.format(date) + ".txt");
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		tracker = new PrintStream(file);
 	}
-
-	public int getMouseSpotY() {
-		return mouseSpotY;
+	
+	public PieceColor getCurrent() {
+		return current;
 	}
-
+	
 	public GamePiece getPiece(int x, int y) {
 		return board[x][y];
 	}
 
 	public void setPiece(int x, int y, PieceColor color) {
 		if (current == BLACK)	current = WHITE;	else	current = BLACK;
-		System.out.println("piece set at: (" + mouseSpotX + ", " + mouseSpotY + ")");
+		System.out.println("piece set at: (" + x + ", " + y + ")");
 		board[x][y] = new GamePiece(color, x, y);
-		pieceTrack.push(board[x][y]);
+		undoTrack.push(board[x][y]);	// for undo function
 		board[x][y].getImage(g);
+		trackOutput(color, x, y);
+		gameover = board[x][y].hasFive(this);
+		winner = gameover ? color : null;
 	}
 	
-	public void removeLastPiece() {
-		GamePiece lastPiece = pieceTrack.pop();
-		lastPiece.removeImage(g);
-		board[lastPiece.x][lastPiece.y] = null;
-		if (lastPiece.color == BLACK)	current = BLACK;	else	current = WHITE;
-		lastPieceRemoved = true;
-		System.out.println("last piece withdrawn");
-	}
-	
-	// potential
-	public void restart() {
-		System.out.println("Game restarted");
-		board = new GamePiece[15][15];
-		gameover = false;
-		winner = null;
-		current = BLACK;
-		mouseClicked = false;
-		mouseSpotX = 0;
-		mouseSpotY = 0;
-		panel.clear();
-		getImage();
-		gameRestarted = true;
+	private void trackOutput(PieceColor color, int x, int y) {
+		if (recordingOn) {
+			tracker.println(stepTrack + "  " + color + " " + x + " " + y);
+			stepTrack++;
+		}
 	}
 	
 	// returns true if the game is over
@@ -115,24 +130,17 @@ public class GameBoard {
 	}
 
 	// returns the color of the winner (returns null if the game is not over)
-	public PieceColor winner() {
+	public PieceColor getWinner() {
 		return winner;
 	}
 
-	// asks every existing piece on the board to check if its side wins and returns
-	// true if
-	// either side wins. Updates the fields accordingly.
-	public boolean checkWinner(PieceColor color) {
-		for (GamePiece[] row : board) {
-			for (GamePiece piece : row) {
-				if (piece != null && piece.color == color && piece.wins(this)) {
-					gameover = true;
-					winner = color;
-					return true;
-				}
-			}
-		}
-		return false;
+	public void removeLastPiece() {
+		GamePiece lastPiece = undoTrack.pop();
+		lastPiece.removeImage(g);
+		board[lastPiece.x][lastPiece.y] = null;
+		if (lastPiece.color == BLACK)	current = BLACK;	else	current = WHITE;
+		if (recordingOn) 	tracker.println("undo");
+		System.out.println("last piece withdrawn");
 	}
 	
 	// returns true if the spot specified by the given x and y value is available
@@ -142,17 +150,21 @@ public class GameBoard {
 	}
 
 	public void showWinner() {
-		g.setColor(Color.RED);
-		g.setFont(new Font("TimesRoman", Font.BOLD, 120));
-		if (winner == BLACK) {
-			g.drawString("BLACK wins!", MARGIN, MARGIN + 7 * WIDTH);
-		} else {
-			g.drawString("WHITE wins!", MARGIN, MARGIN + 7 * WIDTH);
-		}
+		g.setColor(DISPLAY_COLOR);
+		g.setFont(new Font("Arial", Font.BOLD, 120));
+		g.drawString(winner + " wins !", MARGIN, MARGIN + 16 * WIDTH);
 	}
 
 	public void close() {
 		panel.setVisible(false);
+	}
+	
+	public int getMouseSpotX() {
+		return mouseSpotX;
+	}
+
+	public int getMouseSpotY() {
+		return mouseSpotY;
 	}
 
 	private void getImage() {

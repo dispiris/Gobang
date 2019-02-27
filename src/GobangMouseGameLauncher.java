@@ -1,6 +1,6 @@
 /*
  * Author: Xinkai Zhang
- * Version: 1.1
+ * Version: 1.2
  * Features:
  * 		players can now withdraw / undo the last piece by pressing 'r'
  */
@@ -21,12 +21,11 @@ public class GobangMouseGameLauncher {
 	}
 	
 	public static boolean turn(GameBoard board) throws InterruptedException {
-		PieceColor color = board.current;
+		PieceColor color = board.getCurrent();
 		System.out.println(color + " turn: ");
 		
 		while (!board.mouseClicked) {
-			if (board.lastPieceRemoved)	{
-				board.lastPieceRemoved = false;
+			if (board.getCurrent() != color)	{
 				return false;
 			}
 			Thread.sleep(50);
@@ -47,8 +46,8 @@ public class GobangMouseGameLauncher {
 		}
 		board.setPiece(x, y, color);
 		
-		if (board.checkWinner(color)) {
-			System.out.println(color + " WINS !!!");
+		if (board.gameover()) {
+			System.out.println(board.getWinner() + " WINS !!!");
 			return true;
 		}
 		return false;
