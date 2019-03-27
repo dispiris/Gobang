@@ -10,9 +10,10 @@ import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
+import utilPackage.DrawingPanel;
+
 public class GameBoard {
 	
-	// utility constants:
 	public static final PieceColor BLACK = PieceColor.BLACK;
 	public static final PieceColor WHITE = PieceColor.WHITE;
 	public static final int SIZE = 15; // 15 * 15 board
@@ -22,58 +23,74 @@ public class GameBoard {
 	public static final int PANEL_SIZE = 2 * MARGIN + (SIZE - 1) * WIDTH;
 	public static final Color BACKGROUND_COLOR = new Color(222, 184, 135);	// color of goldwood
 	public static final Color DISPLAY_COLOR = new Color(96,40,30);
-
-	// fields:
+	
+	// for tracking the game
 	private GamePiece[][] board;
-	private DrawingPanel panel;
-	private Graphics g;
-	private Stack<GamePiece> undoTrack;	// tracking game pieces
-	private PieceColor current;		// may or may not be used
+	private PieceColor current;
 	private boolean gameover;
 	private PieceColor winner;
+	
+	// for undo function
+	private Stack<GamePiece> undoTrack;	// tracking pieces
+	
+	// for images
+	private DrawingPanel panel;
+	private Graphics g;
+	
+	// for mouse click function
 	private int mouseSpotX;
 	private int mouseSpotY;
-	private int stepTrack;
-	
-	private PrintStream tracker;
+
+	// for recording function
 	private boolean recordingOn;
-	public boolean mouseClicked;
+	private int stepTrack;
+	private PrintStream tracker;
 	
+	// mouse click triggers a GameEvent and game over triggers a winEvent
+	private GameEventListener listener;
+	private WinEventListener winListener;
+	
+	// constructs a default game board with recoringOn = true
 	public GameBoard() {
-		this(BLACK, true);
+		this(true);
 	}
 	
 	public GameBoard(boolean recordingOn) {
-		this(BLACK, recordingOn);
-	}
-	
-	public GameBoard(PieceColor start, boolean recordingOn) {
 		board = new GamePiece[15][15]; // [x][y] 0 - 14
-		panel = new DrawingPanel(PANEL_SIZE, PANEL_SIZE + 70);
-		g = panel.getGraphics();
-		undoTrack = new Stack<>();
-		this.current = start;
+		current = BLACK;
 		gameover = false;
 		winner = null;
-		mouseClicked = false;
-		stepTrack = 1;
-		this.recordingOn = recordingOn;
+		
+		undoTrack = new Stack<>();
+		
+		panel = new DrawingPanel(PANEL_SIZE, PANEL_SIZE + 70);
+		g = panel.getGraphics();
 		getImage();
+		
+		mouseSpotX = -1;
+		mouseSpotY = -1;
+		
+		this.recordingOn = recordingOn;
+		stepTrack = 1;
 		if (recordingOn) {
 			try {
 				getTracker();
 			} catch (FileNotFoundException e) {};
 		}
 		
-		// mouse click function
 		panel.onClick((x, y) -> {
-			getClickSpot(x, y);
-			mouseClicked = true;
+			if (!gameover) {
+				getClickSpot(x, y);
+				if (!validPosition(mouseSpotX, mouseSpotY)) {
+					System.out.println("Invalid position. Please try again...");
+				} else {
+					listener.onGameEvent(current, mouseSpotX, mouseSpotY);
+				}
+			}
 		});
 		
-		// keyboard function (add new keyboard reactions here)
 		panel.onKeyDown(ch -> {
-			if (ch == 'r') {
+			if (!gameover && ch == 'r') {
 				try {
 					removeLastPiece();
 				} catch (EmptyStackException ex) {
@@ -83,88 +100,83 @@ public class GameBoard {
 		});
 	}
 	
-	private void getTracker() throws FileNotFoundException {
-		File dir = new File("replays");
-		dir.mkdirs();
-		Date date = new Date() ;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
-		File file = new File(dir, dateFormat.format(date) + ".txt");
-		try {
-			file.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		tracker = new PrintStream(file);
+	public void setListener(GameEventListener s) {
+		listener = s;
 	}
 	
-	public PieceColor getCurrent() {
-		return current;
+	public void setWinListener(WinEventListener s) {
+		winListener = s;
 	}
 	
 	public GamePiece getPiece(int x, int y) {
 		return board[x][y];
 	}
-
+	
 	public void setPiece(int x, int y, PieceColor color) {
-		if (current == BLACK)	current = WHITE;	else	current = BLACK;
-		System.out.println("piece set at: (" + x + ", " + y + ")");
+		setPiece(x, y, color, false, -1);
+	}
+	
+	public void setPiece(int x, int y, PieceColor color, boolean showStepNum, int stepNum) {
+		current = current == BLACK ? WHITE : BLACK;
+		System.out.println(current + " piece set at: (" + x + ", " + y + ")");
+		printMessage(current + " piece set at: (" + x + ", " + y + ")");
 		board[x][y] = new GamePiece(color, x, y);
+		board[x][y].getImage(g); 
+		if (showStepNum)
+			board[x][y].showStepNumber(stepNum, g);
+		
 		undoTrack.push(board[x][y]);	// for undo function
-		board[x][y].getImage(g);
-		trackOutput(color, x, y);
+		if(recordingOn)	
+			trackOutput(color, x, y);		// for recording
+		
 		gameover = board[x][y].hasFive(this);
-		winner = gameover ? color : null;
-	}
-	
-	private void trackOutput(PieceColor color, int x, int y) {
-		if (recordingOn) {
-			tracker.println(stepTrack + "  " + color + " " + x + " " + y);
-			stepTrack++;
+		if (gameover) {
+			winner = color;
+			showWinner();
 		}
-	}
-	
-	// returns true if the game is over
-	public boolean gameover() {
-		return gameover;
-	}
-
-	// returns the color of the winner (returns null if the game is not over)
-	public PieceColor getWinner() {
-		return winner;
 	}
 
 	public void removeLastPiece() {
+		stepTrack--;
 		GamePiece lastPiece = undoTrack.pop();
 		lastPiece.removeImage(g);
 		board[lastPiece.x][lastPiece.y] = null;
-		if (lastPiece.color == BLACK)	current = BLACK;	else	current = WHITE;
+		current = lastPiece.color == BLACK ? BLACK : WHITE;
 		if (recordingOn) 	tracker.println("undo");
 		System.out.println("last piece withdrawn");
+		printMessage("last piece withdrawn");
 	}
 	
-	// returns true if the spot specified by the given x and y value is available
-	// returns false if the spot is out of bound or is already occupied
-	public boolean validPosition(int x, int y) {
-		return x >= 0 && x <= 14 && y >= 0 && y <= 14 && board[x][y] == null;
-	}
-
 	public void showWinner() {
+		clearDisplayArea();
 		g.setColor(DISPLAY_COLOR);
-		g.setFont(new Font("Arial", Font.BOLD, 120));
-		g.drawString(winner + " wins !", MARGIN, MARGIN + 16 * WIDTH);
-	}
-
-	public void close() {
-		panel.setVisible(false);
+		g.setFont(new Font("Algerian", Font.ITALIC, 92));
+		g.drawString(winner + " player wins", 60, MARGIN + 16 * WIDTH + 10);
+		if (winListener != null)
+			winListener.onWinEvent(winner);
 	}
 	
-	public int getMouseSpotX() {
-		return mouseSpotX;
+	private void printMessage(String message) {
+		clearDisplayArea();
+		g.setColor(Color.BLACK);
+		g.setFont(new Font("Arial", Font.BOLD, 50));
+		int x = MARGIN + 2 * WIDTH;
+		if (message.substring(0, 5).equals("BLACK"))	x -= 14;
+		g.drawString(message, x, MARGIN + 16 * WIDTH);
 	}
 
-	public int getMouseSpotY() {
-		return mouseSpotY;
+	private void clearDisplayArea() {
+		g.setColor(BACKGROUND_COLOR);
+		g.fillRect(0, MARGIN + 15 * WIDTH, PANEL_SIZE, MARGIN);
+	}
+	
+	private void trackOutput(PieceColor color, int x, int y) {
+		tracker.println(stepTrack + "  " + color + " " + x + " " + y);
+		stepTrack++;
+	}
+	
+	private boolean validPosition(int x, int y) {
+		return x >= 0 && x <= 14 && y >= 0 && y <= 14 && board[x][y] == null;
 	}
 
 	private void getImage() {
@@ -188,12 +200,27 @@ public class GameBoard {
 		}
 		for (int i = 0; i <= 9; i++) {
 			String number = "" + i;
-			g.drawString(number, MARGIN - 45, MARGIN + WIDTH * i + 5);
+			g.drawString(number, MARGIN - 45, MARGIN + WIDTH * i + 7);
 		}
 		for (int i = 10; i <= SIZE - 1; i++) {
 			String number = "" + i;
-			g.drawString(number, MARGIN - 55, MARGIN + WIDTH * i + 5);
+			g.drawString(number, MARGIN - 55, MARGIN + WIDTH * i + 7);
 		}
+	}
+	
+	private void getTracker() throws FileNotFoundException {
+		File dir = new File("replays");
+		dir.mkdirs();
+		Date date = new Date() ;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
+		File file = new File(dir, dateFormat.format(date) + ".txt");
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		tracker = new PrintStream(file);
 	}
 	
 	private void getClickSpot(int x, int y) {

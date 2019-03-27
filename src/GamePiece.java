@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 public class GamePiece {
@@ -14,7 +15,7 @@ public class GamePiece {
 	public int x;			// the x - position
 	public int y;			// the y - position
 	
-	// constructs a new piece with the given x, y - positions and type/color
+	// constructs a new piece with the given x and y positions and color
 	public GamePiece(PieceColor color, int x, int y) {
 		this.color = color;
 		this.x = x;
@@ -22,15 +23,30 @@ public class GamePiece {
 	}
 	
 	public void getImage(Graphics g) {
-		if (color == BLACK) {
+		if (color == BLACK)
 			g.setColor(Color.BLACK);
-		} else {
+		else
 			g.setColor(Color.WHITE);
-		}
 		
 		int x = MARGIN + this.x * WIDTH;
 		int y = MARGIN + this.y * WIDTH;
 		g.fillOval(x - RADIUS, y - RADIUS, RADIUS * 2, RADIUS * 2);
+	}
+	
+	public void showStepNumber(int n, Graphics g) {
+		if (color == BLACK)
+			g.setColor(Color.WHITE);
+		else
+			g.setColor(Color.BLACK);
+		
+		int x = MARGIN + this.x * WIDTH - 7;
+		int y = MARGIN + this.y * WIDTH + 10;
+		
+		if (n >= 10) {
+			x -= 8;
+		}
+		g.setFont(new Font("Arial", Font.BOLD, 28));
+		g.drawString("" + n, x, y);
 	}
 	
 	public void removeImage(Graphics g) {
