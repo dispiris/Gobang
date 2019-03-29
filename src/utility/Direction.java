@@ -1,3 +1,4 @@
+package utility;
 // the direction on the board
 //  0 -------------> (x)
 //  |
