@@ -28,6 +28,7 @@ public class GobangGameLauncher extends Thread {
 		messBoard = new MessageBoard("launch");
 		panel.add(messBoard);
 		
+		
 		fr.setContentPane(panel);
 		fr.pack();
 		fr.setResizable(false);
@@ -40,16 +41,18 @@ public class GobangGameLauncher extends Thread {
 		Timer timer = new Timer(4000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				board.setFocusable(true);
+				board.requestFocusInWindow();
 				fr.validate();
 				panel.setPreferredSize(new Dimension(1040, 1190));
-				fr.pack();				
+				fr.pack();	
 			}
 		});
 		timer.setRepeats(false);
 		timer.start();
 	}
 
-	// user should launch the game thru main program
+//	 user should launch the game thru main program
 //	public static void main(String[] args) {
 //		var test = new GobangGameLauncher();
 //		test.start();

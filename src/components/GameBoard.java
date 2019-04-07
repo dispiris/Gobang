@@ -110,8 +110,6 @@ public class GameBoard extends JPanel implements MouseListener, KeyListener {
 		
 		addMouseListener(this);
 		addKeyListener(this);
-		setFocusable(true);
-        requestFocusInWindow();
 	}
 	
 	public void setMessListener(MessageEventListener s) {

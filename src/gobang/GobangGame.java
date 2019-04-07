@@ -18,7 +18,7 @@ import javax.swing.SwingConstants;
 public class GobangGame {
 	
 	private JFrame frame;
-	private JPanel panel;
+	private  JPanel panel;
 	private JTextField text;
 	private JButton launcherBut;
 	private JButton replayerBut;
@@ -37,7 +37,7 @@ public class GobangGame {
 		text.setFont(new Font("Arial", Font.PLAIN, 50));
 		panel.add(text);
 		
-		launcherBut = new JButton("1. start new PvP game");
+		launcherBut = new JButton("1. start rnew PvP game");
 		launcherBut.setHorizontalAlignment(SwingConstants.LEFT);
 		launcherBut.setFont(DEFAULT_FONT);
 		launcherBut.addActionListener(new ActionListener() {
