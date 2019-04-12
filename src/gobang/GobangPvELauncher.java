@@ -8,17 +8,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import components.GameBoard;
+import components.AIGameBoard;
 import components.MessageBoard;
 
-public class GobangGameLauncher extends Thread {
+public class GobangPvELauncher extends Thread {
 	
-	private GameBoard board;
+	private AIGameBoard board;
 	private MessageBoard messBoard;
 
 	@Override
 	public void run() {
-		var fr = new JFrame("Gobang game");
+		var fr = new JFrame("Gobang PvE Game");
 		fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		fr.setLocationByPlatform(true);
 		
@@ -34,7 +34,7 @@ public class GobangGameLauncher extends Thread {
 		fr.setResizable(false);
 		fr.setVisible(true);
 		
-		board = new GameBoard(false);
+		board = new AIGameBoard(false);
 		board.setMessListener(messBoard);
 		panel.add(board);
 		
@@ -54,7 +54,7 @@ public class GobangGameLauncher extends Thread {
 
 //	 user should launch the game thru main program
 //	public static void main(String[] args) {
-//		var test = new GobangGameLauncher();
+//		var test = new GobangPvELauncher();
 //		test.start();
 //	}
 }

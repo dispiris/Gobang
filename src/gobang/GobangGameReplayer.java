@@ -18,6 +18,7 @@ public class GobangGameReplayer extends Thread {
 	
 	public static final int DELAY_TIME = 500;
 	
+	@SuppressWarnings("resource")
 	@Override
 	public void run() {
 		System.out.println("Recordings available:");
@@ -27,7 +28,6 @@ public class GobangGameReplayer extends Thread {
 			System.out.println("  " + i + " - " + files[i].getName());
 		}
 		System.out.println("Which one do you want to replay?");
-		@SuppressWarnings("resource")
 		Scanner console = new Scanner(System.in);
 		String s = console.next();
 		while (!isInteger(s) || Integer.parseInt(s) < 0 || Integer.parseInt(s) >= files.length) {
@@ -35,7 +35,7 @@ public class GobangGameReplayer extends Thread {
 			s = console.next();
 		}
 		
-		var fr = new JFrame("Gobang game");
+		var fr = new JFrame("Gobang replay");
 		fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		fr.setLocationByPlatform(true);
 		
@@ -49,7 +49,10 @@ public class GobangGameReplayer extends Thread {
 		fr.setResizable(false);
 		fr.setVisible(true);
 		
-		var board = new GameBoard(true);
+		GameBoard board = new GameBoard(true);
+		board.setFocusable(true);
+		board.requestFocusInWindow();
+		board.removeMouseListener(board);
 		board.setMessListener(messBoard);
 		panel.add(board);
 		
@@ -70,19 +73,15 @@ public class GobangGameReplayer extends Thread {
 		}
 		
 		try {
-			@SuppressWarnings("resource")
-			Scanner input = new Scanner(files[Integer.parseInt(s)]);
+			var input = new Scanner(files[Integer.parseInt(s)], "UTF-8");
 			System.out.println("starting to replay...");
 			while (input.hasNextLine()) {
 				String line = input.nextLine();
 				if (!line.equals("undo")) {
-					@SuppressWarnings("resource")
-					Scanner lineS = new Scanner(line);
-					int step = lineS.nextInt();
-					PieceColor color = lineS.next().equals("BLACK") ? PieceColor.BLACK : PieceColor.WHITE;
-					int x = lineS.nextInt();
-					int y = lineS.nextInt();
-					board.setPiece(x, y, color, true, step);
+					Scanner lineScanner = new Scanner(line);
+					PieceColor color = lineScanner.next().equals("BLACK") ? PieceColor.BLACK : PieceColor.WHITE;
+					board.setPiece(lineScanner.nextInt(), lineScanner.nextInt(), color, true);
+//					board.setPiece(1, 1, PieceColor.BLACK, true);
 				} else {
 					board.removeLastPiece();
 				}
@@ -104,9 +103,9 @@ public class GobangGameReplayer extends Thread {
 	    return true;
 	}
 
-//	public static void main(String[] args) {
-//		var a = new GobangGameReplayer();
-//		a.start();
-//	}
+	public static void main(String[] args) {
+		GobangGameReplayer a = new GobangGameReplayer();
+		a.start();
+	}
 	
 }

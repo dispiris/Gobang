@@ -23,7 +23,7 @@ public class MessageBoard extends JTextField implements MessageEventListener {
 		setFont(new Font("Arial", Font.PLAIN, 50));
 		setEditable(false);
 		if (func.equals("launch")) {
-			setText("          Welcome to Gobang game v1.4");
+			setText("          Welcome to Gobang game v1.5");
 			var timer = new Timer(2000, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -41,7 +41,7 @@ public class MessageBoard extends JTextField implements MessageEventListener {
 			timer2.setRepeats(false);
 			timer2.start();
 		} else if (func.equals("replay")) {
-			setText("          Welcome to Gobang game v1.4");
+			setText("          Welcome to Gobang game v1.5");
 			var timer = new Timer(2000, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

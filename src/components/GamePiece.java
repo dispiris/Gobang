@@ -59,6 +59,10 @@ public class GamePiece {
 		this.y = y;
 	}
 	
+	public PieceColor getColor() {
+		return color;
+	}
+	
 	public void getImage(Graphics g) {
 		int x = MARGIN + this.x * WIDTH - RADIUS;
 		int y = MARGIN + this.y * WIDTH - RADIUS;
@@ -96,38 +100,214 @@ public class GamePiece {
 		g.drawLine(x, y + WIDTH / 2, x + WIDTH, y + WIDTH / 2);
 	}
 	
-	public boolean hasFive(GameBoard gameBoard) {
+	boolean hasFive(GamePiece[][] board) {
 		boolean result = false;
 		if (!result) {
-			result = sameColor(gameBoard, x, y - 1) && sameColor(gameBoard, x, y - 2) && sameColor(gameBoard, x, y - 3) && sameColor(gameBoard, x, y - 4);
+			result = sameColor(board, x, y - 1) && sameColor(board, x, y - 2) && sameColor(board, x, y - 3) && sameColor(board, x, y - 4);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x, y + 1) && sameColor(gameBoard, x, y + 2) && sameColor(gameBoard, x, y + 3) && sameColor(gameBoard, x, y + 4);
+			result = sameColor(board, x, y + 1) && sameColor(board, x, y + 2) && sameColor(board, x, y + 3) && sameColor(board, x, y + 4);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x - 1, y) && sameColor(gameBoard, x - 2, y) && sameColor(gameBoard, x - 3, y) && sameColor(gameBoard, x - 4, y);
+			result = sameColor(board, x - 1, y) && sameColor(board, x - 2, y) && sameColor(board, x - 3, y) && sameColor(board, x - 4, y);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x + 1, y) && sameColor(gameBoard, x + 2, y) && sameColor(gameBoard, x + 3, y) && sameColor(gameBoard, x + 4, y);
+			result = sameColor(board, x + 1, y) && sameColor(board, x + 2, y) && sameColor(board, x + 3, y) && sameColor(board, x + 4, y);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x - 1, y - 1) && sameColor(gameBoard, x - 2, y - 2) && sameColor(gameBoard, x - 3, y - 3) && sameColor(gameBoard, x - 4, y - 4);
+			result = sameColor(board, x - 1, y - 1) && sameColor(board, x - 2, y - 2) && sameColor(board, x - 3, y - 3) && sameColor(board, x - 4, y - 4);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x + 1, y + 1) && sameColor(gameBoard, x + 2, y + 2) && sameColor(gameBoard, x + 3, y + 3) && sameColor(gameBoard, x + 4, y + 4);
+			result = sameColor(board, x + 1, y + 1) && sameColor(board, x + 2, y + 2) && sameColor(board, x + 3, y + 3) && sameColor(board, x + 4, y + 4);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x - 1, y + 1) && sameColor(gameBoard, x - 2, y + 2) && sameColor(gameBoard, x - 3, y + 3) && sameColor(gameBoard, x - 4, y + 4);
+			result = sameColor(board, x - 1, y + 1) && sameColor(board, x - 2, y + 2) && sameColor(board, x - 3, y + 3) && sameColor(board, x - 4, y + 4);
 		}
 		if (!result) {
-			result = sameColor(gameBoard, x + 1, y - 1) && sameColor(gameBoard, x + 2, y - 2) && sameColor(gameBoard, x + 3, y - 3) && sameColor(gameBoard, x + 4, y - 4);
+			result = sameColor(board, x + 1, y - 1) && sameColor(board, x + 2, y - 2) && sameColor(board, x + 3, y - 3) && sameColor(board, x + 4, y - 4);
 		}
 		return result;
 	}
 	
-	private boolean sameColor(GameBoard gameBoard, int x, int y) {
+	boolean hasFourAlive(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = isEmpty(board, x, y + 1) && sameColor(board, x, y - 1) && sameColor(board, x, y - 2) && sameColor(board, x, y - 3) && isEmpty(board, x, y - 4);
+		if (!result) 
+			result = isEmpty(board, x, y - 1) && sameColor(board, x, y + 1) && sameColor(board, x, y + 2) && sameColor(board, x, y + 3) && isEmpty(board, x, y + 4);
+		if (!result) 
+			result = isEmpty(board, x + 1, y) && sameColor(board, x - 1, y) && sameColor(board, x - 2, y) && sameColor(board, x - 3, y) && isEmpty(board, x - 4, y);
+		if (!result) 
+			result = isEmpty(board, x - 1, y) && sameColor(board, x + 1, y) && sameColor(board, x + 2, y) && sameColor(board, x + 3, y) && isEmpty(board, x + 4, y);
+		if (!result) 
+			result = isEmpty(board, x + 1, y + 1) && sameColor(board, x - 1, y - 1) && sameColor(board, x - 2, y - 2) && sameColor(board, x - 3, y - 3) && isEmpty(board, x - 4, y - 4);
+		if (!result) 
+			result = isEmpty(board, x - 1, y - 1) && sameColor(board, x + 1, y + 1) && sameColor(board, x + 2, y + 2) && sameColor(board, x + 3, y + 3) && isEmpty(board, x + 4, y + 4);
+		if (!result) 
+			result = isEmpty(board, x + 1, y - 1) && sameColor(board, x - 1, y + 1) && sameColor(board, x - 2, y + 2) && sameColor(board, x - 3, y + 3) && isEmpty(board, x - 4, y + 4);
+		if (!result) 
+			result = isEmpty(board, x - 1, y + 1) && sameColor(board, x + 1, y - 1) && sameColor(board, x + 2, y - 2) && sameColor(board, x + 3, y - 3) && isEmpty(board, x + 4, y - 4);
+		return result;
+	}
+	
+	boolean hasFourDead(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = !sameColor(board, x, y + 1) && sameColor(board, x, y - 1) && sameColor(board, x, y - 2) && sameColor(board, x, y - 3) && isEmpty(board, x, y - 4);
+		if (!result) 
+			result = !sameColor(board, x, y - 1) && sameColor(board, x, y + 1) && sameColor(board, x, y + 2) && sameColor(board, x, y + 3) && isEmpty(board, x, y + 4);
+		if (!result) 
+			result = !sameColor(board, x + 1, y) && sameColor(board, x - 1, y) && sameColor(board, x - 2, y) && sameColor(board, x - 3, y) && isEmpty(board, x - 4, y);
+		if (!result)
+			result = !sameColor(board, x - 1, y) && sameColor(board, x + 1, y) && sameColor(board, x + 2, y) && sameColor(board, x + 3, y) && isEmpty(board, x + 4, y);
+		if (!result) 
+			result = !sameColor(board, x + 1, y + 1) && sameColor(board, x - 1, y - 1) && sameColor(board, x - 2, y - 2) && sameColor(board, x - 3, y - 3) && isEmpty(board, x - 4, y - 4);
+		if (!result) 
+			result = !sameColor(board, x - 1, y - 1) && sameColor(board, x + 1, y + 1) && sameColor(board, x + 2, y + 2) && sameColor(board, x + 3, y + 3) && isEmpty(board, x + 4, y + 4);
+		if (!result) 
+			result = !sameColor(board, x + 1, y - 1) && sameColor(board, x - 1, y + 1) && sameColor(board, x - 2, y + 2) && sameColor(board, x - 3, y + 3) && isEmpty(board, x - 4, y + 4);
+		if (!result) 
+			result = !sameColor(board, x - 1, y + 1) && sameColor(board, x + 1, y - 1) && sameColor(board, x + 2, y - 2) && sameColor(board, x + 3, y - 3) && isEmpty(board, x + 4, y - 4);
+		return result;
+	}
+	
+	boolean hasThreeAlive(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = isEmpty(board, x, y + 1) && sameColor(board, x, y - 1) && sameColor(board, x, y - 2) && isEmpty(board, x, y - 3);
+		if (!result) 
+			result = isEmpty(board, x, y - 1) && sameColor(board, x, y + 1) && sameColor(board, x, y + 2) && isEmpty(board, x, y + 3);
+		if (!result) 
+			result = isEmpty(board, x + 1, y) && sameColor(board, x - 1, y) && sameColor(board, x - 2, y) && isEmpty(board, x - 3, y);
+		if (!result) 
+			result = isEmpty(board, x - 1, y) && sameColor(board, x + 1, y) && sameColor(board, x + 2, y) && isEmpty(board, x + 3, y);
+		if (!result) 
+			result = isEmpty(board, x + 1, y + 1) && sameColor(board, x - 1, y - 1) && sameColor(board, x - 2, y - 2) && isEmpty(board, x - 3, y - 3);
+		if (!result) 
+			result = isEmpty(board, x - 1, y - 1) && sameColor(board, x + 1, y + 1) && sameColor(board, x + 2, y + 2) && isEmpty(board, x + 3, y + 3);
+		if (!result) 
+			result = isEmpty(board, x + 1, y - 1) && sameColor(board, x - 1, y + 1) && sameColor(board, x - 2, y + 2) && isEmpty(board, x - 3, y + 3);
+		if (!result) 
+			result = isEmpty(board, x - 1, y + 1) && sameColor(board, x + 1, y - 1) && sameColor(board, x + 2, y - 2) && isEmpty(board, x + 3, y - 3);
+		return result;
+	}
+	
+	boolean hasThreeDead(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = !sameColor(board, x, y + 1) && sameColor(board, x, y - 1) && sameColor(board, x, y - 2) && isEmpty(board, x, y - 3);
+		if (!result) 
+			result = !sameColor(board, x, y - 1) && sameColor(board, x, y + 1) && sameColor(board, x, y + 2) && isEmpty(board, x, y + 3);
+		if (!result) 
+			result = !sameColor(board, x + 1, y) && sameColor(board, x - 1, y) && sameColor(board, x - 2, y) && isEmpty(board, x - 3, y);
+		if (!result) 
+			result = !sameColor(board, x - 1, y) && sameColor(board, x + 1, y) && sameColor(board, x + 2, y) && isEmpty(board, x + 3, y);
+		if (!result) 
+			result = !sameColor(board, x + 1, y + 1) && sameColor(board, x - 1, y - 1) && sameColor(board, x - 2, y - 2) && isEmpty(board, x - 3, y - 3);
+		if (!result) 
+			result = !sameColor(board, x - 1, y - 1) && sameColor(board, x + 1, y + 1) && sameColor(board, x + 2, y + 2) && isEmpty(board, x + 3, y + 3);
+		if (!result) 
+			result = !sameColor(board, x + 1, y - 1) && sameColor(board, x - 1, y + 1) && sameColor(board, x - 2, y + 2) && isEmpty(board, x - 3, y + 3);
+		if (!result) 
+			result = !sameColor(board, x - 1, y + 1) && sameColor(board, x + 1, y - 1) && sameColor(board, x + 2, y - 2) && isEmpty(board, x + 3, y - 3);
+		return result;
+	}
+	
+	boolean hasTwoAlive(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = isEmpty(board, x, y + 1) && sameColor(board, x, y - 1) && isEmpty(board, x, y - 2);
+		if (!result) 
+			result = isEmpty(board, x, y - 1) && sameColor(board, x, y + 1) && isEmpty(board, x, y + 2);
+		if (!result) 
+			result = isEmpty(board, x + 1, y) && sameColor(board, x - 1, y) && isEmpty(board, x - 2, y);
+		if (!result) 
+			result = isEmpty(board, x - 1, y) && sameColor(board, x + 1, y) && isEmpty(board, x + 2, y);
+		if (!result) 
+			result = isEmpty(board, x + 1, y + 1) && sameColor(board, x - 1, y - 1) && isEmpty(board, x - 2, y - 2);
+		if (!result) 
+			result = isEmpty(board, x - 1, y - 1) && sameColor(board, x + 1, y + 1) && isEmpty(board, x + 2, y + 2);
+		if (!result) 
+			result = isEmpty(board, x + 1, y - 1) && sameColor(board, x - 1, y + 1) && isEmpty(board, x - 2, y + 2);
+		if (!result) 
+			result = isEmpty(board, x - 1, y + 1) && sameColor(board, x + 1, y - 1) && isEmpty(board, x + 2, y - 2);
+		return result;
+	}
+	
+	boolean hasTwoDead(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = !sameColor(board, x, y + 1) && sameColor(board, x, y - 1) && isEmpty(board, x, y - 2);
+		if (!result) 
+			result = !sameColor(board, x, y - 1) && sameColor(board, x, y + 1) && isEmpty(board, x, y + 2);
+		if (!result) 
+			result = !sameColor(board, x + 1, y) && sameColor(board, x - 1, y) && isEmpty(board, x - 2, y);
+		if (!result) 
+			result = !sameColor(board, x - 1, y) && sameColor(board, x + 1, y) && isEmpty(board, x + 2, y);
+		if (!result) 
+			result = !sameColor(board, x + 1, y + 1) && sameColor(board, x - 1, y - 1) && isEmpty(board, x - 2, y - 2);
+		if (!result) 
+			result = !sameColor(board, x - 1, y - 1) && sameColor(board, x + 1, y + 1) && isEmpty(board, x + 2, y + 2);
+		if (!result) 
+			result = !sameColor(board, x + 1, y - 1) && sameColor(board, x - 1, y + 1) && isEmpty(board, x - 2, y + 2);
+		if (!result) 
+			result = !sameColor(board, x - 1, y + 1) && sameColor(board, x + 1, y - 1) && isEmpty(board, x + 2, y - 2);
+		return result;
+	}
+	
+	boolean hasOneAlive(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = isEmpty(board, x, y + 1) && isEmpty(board, x, y - 1);
+		if (!result) 
+			result = isEmpty(board, x, y - 1) && isEmpty(board, x, y + 1);
+		if (!result) 
+			result = isEmpty(board, x + 1, y) && isEmpty(board, x - 1, y);
+		if (!result) 
+			result = isEmpty(board, x - 1, y) && isEmpty(board, x + 1, y);
+		if (!result) 
+			result = isEmpty(board, x + 1, y + 1) && isEmpty(board, x - 1, y - 1);
+		if (!result) 
+			result = isEmpty(board, x - 1, y - 1) && isEmpty(board, x + 1, y + 1);
+		if (!result) 
+			result = isEmpty(board, x + 1, y - 1) && isEmpty(board, x - 1, y + 1);
+		if (!result) 
+			result = isEmpty(board, x - 1, y + 1) && isEmpty(board, x + 1, y - 1);
+		return result;
+	}
+	
+	boolean hasOneDead(GamePiece[][] board) {
+		boolean result = false;
+		if (!result) 
+			result = !sameColor(board, x, y + 1) && isEmpty(board, x, y - 1);
+		if (!result) 
+			result = !sameColor(board, x, y - 1) && isEmpty(board, x, y + 1);
+		if (!result) 
+			result = !sameColor(board, x + 1, y) && isEmpty(board, x - 1, y);
+		if (!result) 
+			result = !sameColor(board, x - 1, y) && isEmpty(board, x + 1, y);
+		if (!result) 
+			result = !sameColor(board, x + 1, y + 1) && isEmpty(board, x - 1, y - 1);
+		if (!result) 
+			result = !sameColor(board, x - 1, y - 1) && isEmpty(board, x + 1, y + 1);
+		if (!result) 
+			result = !sameColor(board, x + 1, y - 1) && isEmpty(board, x - 1, y + 1);
+		if (!result) 
+			result = !sameColor(board, x - 1, y + 1) && isEmpty(board, x + 1, y - 1);
+		return result;
+	}
+	
+	private boolean sameColor(GamePiece[][] board, int x, int y) {
 		try {
-			return gameBoard.getPiece(x, y) != null && gameBoard.getPiece(x, y).color == color;
+			return board[x][y] != null && board[x][y].color == color;
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			return false;
+		}
+	}
+	
+	private boolean isEmpty(GamePiece[][] board, int x, int y) {
+		try {
+			return board[x][y] == null;
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			return false;
 		}
