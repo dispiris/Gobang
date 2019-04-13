@@ -2,19 +2,15 @@ package components;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,6 +26,7 @@ import java.util.Stack;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import utility.Images;
 import utility.MessageEventListener;
 import utility.PieceColor;
 
@@ -38,12 +35,12 @@ public class AIGameBoard extends JPanel implements MouseListener, KeyListener {
 	
 	public static final PieceColor BLACK = PieceColor.BLACK;
 	public static final PieceColor WHITE = PieceColor.WHITE;
-	public static final int SIZE = 15; // 15 * 15 board
 	public static final int MARGIN = 100; // 100 pixels for margin
 	public static final int WIDTH = 60; // 100 pixels wide between lines
 	public static final int RADIUS = 20; // 20 pixels for piece radius
-	public static final int PANEL_SIZE = 2 * MARGIN + (SIZE - 1) * WIDTH;
 	public static final Color BACKGROUND_COLOR = new Color(222, 184, 135);	// color of goldwood
+	// finish the static initialization of board image to prevent flash
+	private static final BufferedImage BOARD_IMAGE = Images.BOARD_IMAGE;
 	
 	// for determine the function of the board
 	private boolean isReplay;
@@ -64,41 +61,11 @@ public class AIGameBoard extends JPanel implements MouseListener, KeyListener {
 	
 //	private int nextX;
 //	private int nextY;
-	
+	// for AI function
 	private Tuple[][][] tuples;
 	
 	private MessageEventListener messListener;
 	
-	// initiate the image of the board
-	private static final BufferedImage BOARD_IMAGE;
-	static {
-		BOARD_IMAGE = new BufferedImage(PANEL_SIZE, PANEL_SIZE, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2d = BOARD_IMAGE.createGraphics();
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setColor(BACKGROUND_COLOR);
-		g2d.fill(new Rectangle2D.Double(0, 0, PANEL_SIZE, PANEL_SIZE));
-		g2d.setColor(Color.BLACK);
-		for (int i = 0; i < SIZE; i++) {
-			g2d.draw(new Line2D.Double(MARGIN, MARGIN + WIDTH * i, MARGIN + WIDTH * 14, MARGIN + WIDTH * i));
-		}
-		for (int i = 0; i < SIZE; i++) {
-			g2d.draw(new Line2D.Double(MARGIN + WIDTH * i, MARGIN, MARGIN + WIDTH * i, MARGIN + WIDTH * 14));
-		}
-		g2d.setFont(new Font("TimesRoman", Font.BOLD, 25));
-		for (int i = 0; i <= 9; i++) {
-			g2d.drawString("" + i, MARGIN + WIDTH * i - 7, MARGIN - 35);
-		}
-		for (int i = 10; i <= SIZE - 1; i++) {
-			g2d.drawString("" + i, MARGIN + WIDTH * i - 15, MARGIN - 35);
-		}
-		for (int i = 0; i <= 9; i++) {
-			g2d.drawString("" + i, MARGIN - 45, MARGIN + WIDTH * i + 7);
-		}
-		for (int i = 10; i <= SIZE - 1; i++) {
-			g2d.drawString("" + i, MARGIN - 55, MARGIN + WIDTH * i + 7);
-		}
-		g2d.dispose();
-	}
 	
 	public AIGameBoard(boolean isReplay) {
 		setPreferredSize(new Dimension(1040, 1040));
@@ -258,7 +225,7 @@ public class AIGameBoard extends JPanel implements MouseListener, KeyListener {
 		Point p = e.getPoint();
 		int x = (int) p.getX();
 		int y = (int) p.getY();
-		if (!gameover) {
+		if (!gameover && current == BLACK) {
 			int mouseSpotX = (int) (((double) x - MARGIN + (double) WIDTH / 2) / WIDTH);
 			int mouseSpotY = (int) (((double) y - MARGIN + (double) WIDTH / 2) / WIDTH);
 			if (!validPosition(mouseSpotX, mouseSpotY)) {
@@ -452,5 +419,92 @@ public class AIGameBoard extends JPanel implements MouseListener, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {}
+	
+	private static class Tuple {
+		
+		private int black;
+		private int white;
+		private int score;
+		private boolean dummy;
+		
+		public Tuple(int x, int y, int type) {
+			black = 0;
+			white = 0;
+			score = 7;
+			if (type == 1) {
+				if (x <= 1 || x >= 13) {
+					dummy = true;
+				} else {
+					dummy = false;
+				}
+			} else if (type == 2) {
+				if (y <= 1 || y >= 13) {
+					dummy = true;
+				} else {
+					dummy = false;
+				}
+			} else if (type == 3 || type == 4) {
+				if (x <= 1 || x >= 14 || y <= 1 || y >= 13) {
+					dummy = true;
+				} else {
+					dummy = false;
+				}
+			}
+		}
+		
+		public int getScore() {
+			if (dummy) {
+				return 0;
+			}
+			return score;
+		}
+		
+		public void add(PieceColor color) {
+			if (!dummy) {
+				checkAddable();
+				if (color == PieceColor.BLACK) {
+					black++;
+				} else {
+					white++;
+				}
+				evaluate();
+			}
+		}
+		
+		private void evaluate() {
+			if(black == 0 && white == 0){
+				score = 7;
+			} else if(black > 0 && white > 0){
+				score = 0;
+				dummy = true;
+			} else if(white == 1){
+				score = 35;
+			} else if(white == 2){
+				score = 800;
+			} else if(white == 3){
+				score = 15000;
+			} else if(white == 4){
+				score = 800000;
+			} else if(white == 5){
+			} else if(black == 1){
+				score = 15;
+			} else if(black == 2){
+				score = 400;
+			} else if(black == 3){
+				score = 1800;
+			} else if(black == 4){
+				score = 100000;
+			} else if(black == 5){
+			} else {
+				throw new IllegalStateException("unknown exception");
+			}
+		}
+		
+		public void checkAddable() {
+			if (black + white >= 5) {
+				throw new IllegalStateException("more than 5 pieces" + black + white);
+			}
+		}
+	}
 	
 }

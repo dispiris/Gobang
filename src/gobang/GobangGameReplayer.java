@@ -79,9 +79,9 @@ public class GobangGameReplayer extends Thread {
 				String line = input.nextLine();
 				if (!line.equals("undo")) {
 					Scanner lineScanner = new Scanner(line);
+					lineScanner.next();	// throw the line number
 					PieceColor color = lineScanner.next().equals("BLACK") ? PieceColor.BLACK : PieceColor.WHITE;
 					board.setPiece(lineScanner.nextInt(), lineScanner.nextInt(), color, true);
-//					board.setPiece(1, 1, PieceColor.BLACK, true);
 				} else {
 					board.removeLastPiece();
 				}
@@ -103,9 +103,9 @@ public class GobangGameReplayer extends Thread {
 	    return true;
 	}
 
-	public static void main(String[] args) {
-		GobangGameReplayer a = new GobangGameReplayer();
-		a.start();
-	}
+//	public static void main(String[] args) {
+//		GobangGameReplayer a = new GobangGameReplayer();
+//		a.start();
+//	}
 	
 }

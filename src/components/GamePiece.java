@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
+import utility.Images;
 import utility.PieceColor;
 
 public class GamePiece {
